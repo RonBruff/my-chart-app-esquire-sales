@@ -82,14 +82,14 @@ export default function HorizontalBarChartCard({
   const metricLabel = getMetricLabel(metric);
 
   return (
-    <div style={{ ...cardStyle, padding: "20px", minHeight: "460px" }}>
+    <div style={{ ...cardStyle, padding: "18px", minHeight: "400px" }}>
       <h3
         style={{
           marginTop: 0,
           marginBottom: "16px",
           color: esqTheme.colors.white,
-          fontSize: "20px",
-          fontWeight: 800,
+          fontSize: "14px",
+          fontWeight: 700,
         }}
       >
         {title}
@@ -98,7 +98,7 @@ export default function HorizontalBarChartCard({
       {data.length === 0 ? (
         <p style={{ color: "#cbd5e1" }}>No data available.</p>
       ) : (
-        <ResponsiveContainer width="100%" height={430}>
+        <ResponsiveContainer width="100%" height={340}>
           <BarChart
             data={data}
             layout="vertical"
@@ -154,7 +154,7 @@ export default function HorizontalBarChartCard({
               dataKey="value"
               name={metricLabel}
               radius={[0, 6, 6, 0]}
-              barSize={18}
+              barSize={20}
             >
               {data.map((row, index) => (
                 <Cell key={`cell-${row.name}`} fill={getChartColor(index)} />

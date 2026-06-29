@@ -5,7 +5,7 @@ import KpiCard from "./KpiCard";
 import HorizontalBarChartCard from "./HorizontalBarChartCard";
 import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
-import UploadCard from "../UploadCard";
+import UploadCard from "./UploadCard";
 
 import type {
   FilterKey,
@@ -232,7 +232,7 @@ const SalesCharts: React.FC = () => {
         background: `linear-gradient(135deg, ${esqTheme.colors.nearBlack}, ${esqTheme.colors.darkGray})`,
         color: esqTheme.colors.text,
         fontFamily: esqTheme.fonts.body,
-        padding: "24px",
+        padding: "16px",
       }}
     >
       <div style={{ maxWidth: "1500px", margin: "0 auto" }}>
@@ -246,16 +246,30 @@ const SalesCharts: React.FC = () => {
           }}
         >
           <div>
-            <h2 style={{ margin: 0, color: esqTheme.colors.white }}>
-              Sales Insights
-            </h2>
-            <p style={{ color: "#cbd5e1", marginTop: "6px" }}>
-              Upload an Excel file and explore sales by state, city, store,
-              vendor, category, ZIP code, and geography.
-            </p>
-          </div>
+  <h2 style={{ margin: 0, color: esqTheme.colors.white }}>
+    Sales Insights
+  </h2>
+  <p style={{ color: "#cbd5e1", marginTop: "6px" }}>
+    Upload an Excel file and explore sales by state, city, store,
+    vendor, category, ZIP code, and geography.
+  </p>
+</div>
 
-          <div style={{ display: "flex", gap: "10px" }}>
+<div
+  style={{
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+  }}
+>
+  <UploadCard
+    fileName={fileName}
+    rowCount={allData.length}
+    onFileUpload={handleFileUpload}
+  />
+</div>
+
+<div style={{ display: "flex", gap: "10px" }}>
             <button
               onClick={() => setActiveTab("Charts")}
               style={tabButtonStyle("Charts")}
@@ -271,12 +285,6 @@ const SalesCharts: React.FC = () => {
             </button>
           </div>
         </div>
-
-        <UploadCard
-          fileName={fileName}
-          rowCount={allData.length}
-          onFileUpload={handleFileUpload}
-        />
 
         {uploadError && (
           <div
@@ -331,29 +339,37 @@ const SalesCharts: React.FC = () => {
             />
 
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-                gap: "16px",
-                marginBottom: "24px",
-              }}
-            >
-              {kpiCards.map((kpi) => (
-                <KpiCard
-                  key={kpi.label}
-                  label={kpi.label}
-                  value={kpi.value}
-                  subtitle={kpi.subtitle}
-                />
-              ))}
-            </div>
+  style={{
+    display: "grid",
+    gridTemplateColumns: "2fr repeat(5, 1fr)",
+    gap: "12px",
+    marginBottom: "20px",
+    alignItems: "stretch",
+  }}
+>
+  <KpiCard
+    label={kpiCards[0].label}
+    value={kpiCards[0].value}
+    subtitle={kpiCards[0].subtitle}
+    isHero
+  />
+
+  {kpiCards.slice(1).map((kpi) => (
+    <KpiCard
+      key={kpi.label}
+      label={kpi.label}
+      value={kpi.value}
+      subtitle={kpi.subtitle}
+    />
+  ))}
+</div>
 
             {activeTab === "Charts" && (
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(430px, 1fr))",
-                  gap: "20px",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(620px, 1fr))",
+                  gap: "24px",
                 }}
               >
                 {chartSections.map((section) => (

@@ -1,6 +1,6 @@
 import React from "react";
 import { esqTheme } from "../theme/esqTheme";
-import type { ChartRow, MetricKey } from "../types/sales";
+import type { ChartRow, MetricKey, SummaryMetrics } from "../types/sales";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -20,18 +20,34 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
+const accentColors = {
+  orange: esqTheme.colors.orange,
+  green: "#4ade80",
+  blue: "#60a5fa",
+  red: "#ef4444",
+};
+
 function formatMetricValue(value: number, metric: MetricKey) {
   if (metric === "transactions") return numberFormatter.format(value);
   return currencyFormatter.format(value);
 }
 
-function getMetricNoun(metric: MetricKey) {
-  if (metric === "netSales") return "net sales";
-  if (metric === "grossSales") return "gross sales";
-  if (metric === "returns") return "returns";
-  if (metric === "transactions") return "transactions";
-  if (metric === "averagePositiveSale") return "average sale";
-  return "metric value";
+function getMetricLabel(metric: MetricKey) {
+  if (metric === "netSales") return "Net Sales";
+  if (metric === "grossSales") return "Gross Sales";
+  if (metric === "returns") return "Returns";
+  if (metric === "transactions") return "Transactions";
+  if (metric === "averagePositiveSale") return "Avg Sale";
+  return "Metric";
+}
+
+function getMetricValue(summary: SummaryMetrics, metric: MetricKey) {
+  if (metric === "netSales") return summary.netSales;
+  if (metric === "grossSales") return summary.grossSales;
+  if (metric === "returns") return summary.returns;
+  if (metric === "transactions") return summary.transactions;
+  if (metric === "averagePositiveSale") return summary.averagePositiveSale;
+  return 0;
 }
 
 function getShare(row: ChartRow | undefined, rows: ChartRow[]) {
@@ -41,54 +57,64 @@ function getShare(row: ChartRow | undefined, rows: ChartRow[]) {
   return total > 0 ? Math.abs(row.value) / total : 0;
 }
 
-function InsightItem({
-  eyebrow,
-  title,
-  detail,
+function StrongText({
+  children,
+  color = esqTheme.colors.white,
 }: {
-  eyebrow: string;
-  title: string;
-  detail: string;
+  children: React.ReactNode;
+  color?: string;
 }) {
+  return (
+    <strong
+      style={{
+        color,
+        fontWeight: 800,
+        fontSize: "1.06em",
+      }}
+    >
+      {children}
+    </strong>
+  );
+}
+
+function InsightLine({
+  accent,
+  children,
+}: {
+  accent: keyof typeof accentColors;
+  children: React.ReactNode;
+}) {
+  const color = accentColors[accent];
+
   return (
     <div
       style={{
-        padding: "12px 0",
-        borderBottom: "1px solid rgba(255,255,255,.08)",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 14,
       }}
     >
       <div
         style={{
-          color: esqTheme.colors.orange,
-          fontSize: 11,
-          fontWeight: 800,
-          textTransform: "uppercase",
-          letterSpacing: ".08em",
-          marginBottom: 5,
+          width: 12,
+          height: 12,
+          borderRadius: 999,
+          background: color,
+          marginTop: 8,
+          flexShrink: 0,
+          boxShadow: `0 0 18px ${color}`,
         }}
-      >
-        {eyebrow}
-      </div>
+      />
 
       <div
         style={{
-          color: esqTheme.colors.white,
-          fontSize: 15,
-          fontWeight: 800,
-          marginBottom: 4,
+          color: "#dbe3f4",
+          fontSize: 16,
+          lineHeight: 1.65,
+          fontWeight: 500,
         }}
       >
-        {title}
-      </div>
-
-      <div
-        style={{
-          color: "#cbd5e1",
-          fontSize: 13,
-          lineHeight: 1.35,
-        }}
-      >
-        {detail}
+        {children}
       </div>
     </div>
   );
@@ -99,17 +125,39 @@ export default function KeyInsightsCard({
   cityData,
   categoryData,
   vendorData,
-  returnRate,
   metric,
+  filteredCount,
+  totalCount,
+  filteredSummary,
+  totalSummary,
 }: {
   storeData: ChartRow[];
   cityData: ChartRow[];
   categoryData: ChartRow[];
   vendorData: ChartRow[];
-  returnRate: number;
   metric: MetricKey;
+  filteredCount: number;
+  totalCount: number;
+  filteredSummary: SummaryMetrics;
+  totalSummary: SummaryMetrics;
 }) {
-  const metricNoun = getMetricNoun(metric);
+  const metricLabel = getMetricLabel(metric);
+
+  const filteredMetricValue = getMetricValue(filteredSummary, metric);
+  const totalMetricValue = getMetricValue(totalSummary, metric);
+
+  const rowShare = totalCount > 0 ? filteredCount / totalCount : 0;
+
+  const metricShare =
+    metric === "averagePositiveSale"
+      ? totalSummary.averagePositiveSale > 0
+        ? filteredSummary.averagePositiveSale /
+            totalSummary.averagePositiveSale -
+          1
+        : 0
+      : totalMetricValue !== 0
+      ? filteredMetricValue / totalMetricValue
+      : 0;
 
   const topStore = storeData[0];
   const topCity = cityData[0];
@@ -118,6 +166,15 @@ export default function KeyInsightsCard({
 
   const topCategoryShare = getShare(topCategory, categoryData);
   const topVendorShare = getShare(topVendor, vendorData);
+
+  const returnTone = filteredSummary.returnRate > 0.1 ? "red" : "green";
+
+  const avgSaleDelta =
+    totalSummary.averagePositiveSale > 0
+      ? filteredSummary.averagePositiveSale /
+          totalSummary.averagePositiveSale -
+        1
+      : 0;
 
   return (
     <div
@@ -135,21 +192,22 @@ export default function KeyInsightsCard({
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 8,
+          gap: 18,
+          marginBottom: 18,
         }}
       >
         <h3
           style={{
             margin: 0,
             color: esqTheme.colors.white,
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 800,
             letterSpacing: "-0.02em",
             lineHeight: 1.2,
+            whiteSpace: "nowrap",
           }}
         >
-          Key Insights
+          At a Glance
         </h3>
 
         <div
@@ -161,103 +219,89 @@ export default function KeyInsightsCard({
         />
       </div>
 
-      <InsightItem
-        eyebrow="Top store"
-        title={
-          topStore
-            ? `${topStore.name} leads by ${metricNoun}`
-            : "No store data available"
-        }
-        detail={
-          topStore
-            ? `${topStore.name} generated ${formatMetricValue(
-                topStore.value,
-                metric
-              )} in the current view.`
-            : "Upload or filter data to see store insights."
-        }
-      />
+      <div
+        style={{
+          display: "grid",
+          gap: 18,
+          marginTop: 6,
+        }}
+      >
+        <InsightLine accent="blue">
+          Showing{" "}
+          <StrongText>{numberFormatter.format(filteredCount)}</StrongText> of{" "}
+          <StrongText>{numberFormatter.format(totalCount)}</StrongText> rows, or{" "}
+          <StrongText>{percentFormatter.format(rowShare)}</StrongText> of the
+          uploaded file.
+        </InsightLine>
 
-      <InsightItem
-        eyebrow="Category mix"
-        title={
-          topCategory
-            ? `${topCategory.name} is the largest category`
-            : "No category data available"
-        }
-        detail={
-          topCategory
-            ? `${topCategory.name} represents ${percentFormatter.format(
-                topCategoryShare
-              )} of the shown category total for ${metricNoun}.`
-            : "Category share will appear once data is available."
-        }
-      />
+        <InsightLine accent="orange">
+          {metric === "averagePositiveSale" ? (
+            <>
+              Average sale is{" "}
+              <StrongText>
+                {avgSaleDelta >= 0 ? "+" : ""}
+                {percentFormatter.format(avgSaleDelta)}
+              </StrongText>{" "}
+              compared with the full dataset.
+            </>
+          ) : (
+            <>
+              This selection accounts for{" "}
+              <StrongText>{percentFormatter.format(metricShare)}</StrongText>{" "}
+              of total {metricLabel.toLowerCase()}.
+            </>
+          )}
+        </InsightLine>
 
-      <InsightItem
-        eyebrow="Vendor concentration"
-        title={
-          topVendor
-            ? `${topVendor.name} has the highest vendor share`
-            : "No vendor data available"
-        }
-        detail={
-          topVendor
-            ? `${topVendor.name} accounts for ${percentFormatter.format(
-                topVendorShare
-              )} of the shown vendor total for ${metricNoun}.`
-            : "Vendor share will appear once data is available."
-        }
-      />
+        {topStore && (
+          <InsightLine accent="orange">
+            <StrongText color={accentColors.orange}>
+              Store {topStore.name}
+            </StrongText>{" "}
+            is the highest-performing location with{" "}
+            <StrongText>{formatMetricValue(topStore.value, metric)}</StrongText>{" "}
+            in {metricLabel.toLowerCase()}.
+          </InsightLine>
+        )}
 
-      <InsightItem
-        eyebrow="Geography"
-        title={
-          topCity
-            ? `${topCity.name} ranks first by ${metricNoun}`
-            : "No city data available"
-        }
-        detail={
-          topCity
-            ? `${topCity.name} is the strongest city in the current filters.`
-            : "City insights will appear once data is available."
-        }
-      />
+        {topCategory && (
+          <InsightLine accent="green">
+            <StrongText color={accentColors.green}>
+              {topCategory.name}
+            </StrongText>{" "}
+            is the leading category, representing{" "}
+            <StrongText>{percentFormatter.format(topCategoryShare)}</StrongText>{" "}
+            of shown category activity.
+          </InsightLine>
+        )}
 
-      <div style={{ paddingTop: 12 }}>
-        <div
-          style={{
-            color: esqTheme.colors.orange,
-            fontSize: 11,
-            fontWeight: 800,
-            textTransform: "uppercase",
-            letterSpacing: ".08em",
-            marginBottom: 5,
-          }}
-        >
-          Returns
-        </div>
+        {topVendor && (
+          <InsightLine accent="blue">
+            <StrongText color={accentColors.blue}>{topVendor.name}</StrongText>{" "}
+            is the highest-performing vendor at{" "}
+            <StrongText>{percentFormatter.format(topVendorShare)}</StrongText>{" "}
+            of shown vendor activity.
+          </InsightLine>
+        )}
 
-        <div
-          style={{
-            color: esqTheme.colors.white,
-            fontSize: 15,
-            fontWeight: 800,
-            marginBottom: 4,
-          }}
-        >
-          Returns are {percentFormatter.format(returnRate)} of gross sales
-        </div>
+        {topCity && (
+          <InsightLine accent="green">
+            <StrongText color={accentColors.green}>{topCity.name}</StrongText>{" "}
+            is currently the strongest-performing market.
+          </InsightLine>
+        )}
 
-        <div
-          style={{
-            color: "#cbd5e1",
-            fontSize: 13,
-            lineHeight: 1.35,
-          }}
-        >
-          Use this to quickly monitor whether returns are becoming material.
-        </div>
+        <InsightLine accent={returnTone}>
+          Return rate remains{" "}
+          <StrongText color={accentColors[returnTone]}>
+            {filteredSummary.returnRate > 0.1 ? "elevated" : "healthy"}
+          </StrongText>{" "}
+          at{" "}
+          <StrongText>
+            {percentFormatter.format(filteredSummary.returnRate)}
+          </StrongText>{" "}
+          of gross sales.
+        </InsightLine>
       </div>
     </div>
   );

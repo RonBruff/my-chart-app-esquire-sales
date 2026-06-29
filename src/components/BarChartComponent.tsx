@@ -9,7 +9,7 @@ import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";
 import KeyInsightsCard from "./KeyInsightsCard";
-import PerformanceStrip from "./PerformanceStrip";
+//import PerformanceStrip from "./PerformanceStrip";
 
 import type {
   FilterKey,
@@ -406,13 +406,6 @@ const SalesCharts: React.FC = () => {
             ))}
             </div>
 
-            <PerformanceStrip
-              filteredCount={filteredData.length}
-              totalCount={allData.length}
-              filteredSummary={summary}
-              totalSummary={totalSummary}
-            />
-
             {activeTab === "Charts" && (
               <div
                 style={{
@@ -422,13 +415,16 @@ const SalesCharts: React.FC = () => {
                 }}
               >
 
-              <KeyInsightsCard
-                storeData={topStoresData}
-                cityData={topCitiesData}
-                categoryData={categoryData}
-                vendorData={vendorData}
-                returnRate={summary.returnRate}
-                metric={selectedMetric}
+                <KeyInsightsCard
+                  storeData={topStoresData}
+                  cityData={topCitiesData}
+                  categoryData={categoryData}
+                  vendorData={vendorData}
+                  metric={selectedMetric}
+                  filteredCount={filteredData.length}
+                  totalCount={allData.length}
+                  filteredSummary={summary}
+                  totalSummary={totalSummary}
                 />
 
                 <TreemapChartCard

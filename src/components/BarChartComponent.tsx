@@ -4,7 +4,7 @@ import { esqTheme } from "../theme/esqTheme";
 import KpiCard from "./KpiCard";
 import HorizontalBarChartCard from "./HorizontalBarChartCard";
 import TreemapChartCard from "./TreemapChartCard";
-import DonutChartCard from "./VendorShareCard";
+import VenderShareCard from "./VendorShareCard";
 import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";
@@ -431,19 +431,19 @@ const SalesCharts: React.FC = () => {
                 metric={selectedMetric}
                 />
 
-                <HorizontalBarChartCard
-                  title="Top Stores"
-                  data={topStoresData}
-                  metric={selectedMetric}
-                />
-
                 <TreemapChartCard
                   title="Category Breakdown"
                   data={categoryData}
                   metric={selectedMetric}
                 />
 
-                <DonutChartCard
+                <HorizontalBarChartCard
+                  title="Top Stores"
+                  data={topStoresData}
+                  metric={selectedMetric}
+                />
+
+                <VenderShareCard 
                   title="Vendor Share"
                   data={vendorData}
                   metric={selectedMetric}

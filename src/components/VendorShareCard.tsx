@@ -30,7 +30,7 @@ function formatValue(value: number, metric: MetricKey): string {
   return currencyFormatter.format(value);
 }
 
-export default function DonutChartCard({
+export default function VenderShareCard ({
   title,
   data,
   metric,

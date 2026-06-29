@@ -12,6 +12,7 @@ const cardStyle: React.CSSProperties = {
 type Props = {
   label: string;
   value: string;
+  exactValue?: string;
   subtitle?: string;
   isHero?: boolean;
 };
@@ -19,33 +20,25 @@ type Props = {
 export default function KpiCard({
   label,
   value,
+  exactValue,
   subtitle,
   isHero = false,
 }: Props) {
   return (
     <div
+      title={exactValue ? `${label}: ${exactValue}` : label}
       style={{
         ...cardStyle,
         position: "relative",
         overflow: "hidden",
-
         display: "flex",
         flexDirection: "column",
-
-        justifyContent: isHero ? "space-between" : "flex-start",
-
-        padding: isHero ? "16px 20px" : "12px 16px",
-
-        minHeight: isHero ? 96 : 76,
-
-        backgroundColor: isHero
-          ? "#242424"
-          : esqTheme.colors.panel,
-
+        justifyContent: isHero ? "center" : "flex-start",
+        padding: isHero ? "18px 22px" : "12px 16px",
+        minHeight: isHero ? 118 : 76,
+        backgroundColor: isHero ? "#242424" : esqTheme.colors.panel,
         border: `1px solid ${
-          isHero
-            ? "rgba(234,114,57,.55)"
-            : esqTheme.colors.border
+          isHero ? "rgba(234,114,57,.55)" : esqTheme.colors.border
         }`,
       }}
     >
@@ -63,40 +56,33 @@ export default function KpiCard({
           />
 
           <svg
-            viewBox="0 0 240 90"
+            viewBox="0 0 260 110"
             preserveAspectRatio="none"
             style={{
               position: "absolute",
-              right: 16,
-              bottom: 12,
-              width: "30%",
-              height: "44%",
-              opacity: 0.18,
+              right: 18,
+              bottom: 18,
+              width: "42%",
+              height: "58%",
+              opacity: 0.16,
               pointerEvents: "none",
             }}
           >
             <path
-              d="M0 70
-                 C25 55 45 68 65 48
-                 S110 38 130 26
-                 S175 30 195 18
-                 S220 18 240 8"
+              d="M0 82 C22 72 38 76 58 62 C78 48 92 55 112 40 C136 22 150 35 172 22 C196 8 210 18 232 10 C244 6 252 6 260 2"
               fill="none"
               stroke={esqTheme.colors.orange}
-              strokeWidth="7"
+              strokeWidth="9"
               strokeLinecap="round"
             />
 
             <path
-              d="M0 82
-                 C30 72 48 80 70 62
-                 S120 52 142 38
-                 S185 40 206 30
-                 S226 28 240 18"
+              d="M0 102 C28 90 42 94 66 78 C92 60 104 66 128 50 C154 32 166 44 190 30 C214 16 228 22 250 14"
               fill="none"
               stroke={esqTheme.colors.orange}
-              strokeWidth="2"
+              strokeWidth="3"
               strokeLinecap="round"
+              opacity={0.75}
             />
           </svg>
         </>
@@ -106,15 +92,14 @@ export default function KpiCard({
         style={{
           position: "relative",
           zIndex: 2,
-          maxWidth: isHero ? "68%" : "100%",
         }}
       >
         <div
           style={{
             color: esqTheme.colors.mutedText,
-            fontSize: 13,
+            fontSize: isHero ? 16 : 13,
             fontWeight: 500,
-            marginBottom: isHero ? 8 : 6,
+            marginBottom: isHero ? 10 : 6,
           }}
         >
           {label}
@@ -124,35 +109,29 @@ export default function KpiCard({
           style={{
             color: esqTheme.colors.white,
             fontWeight: 800,
-            letterSpacing: "-0.04em",
+            letterSpacing: "-0.05em",
             lineHeight: 1,
-
-            fontSize: isHero ? 34 : 24,
-
-            marginBottom: isHero ? 0 : 8,
-
+            fontSize: isHero ? 42 : 24,
+            marginBottom: isHero ? 12 : 8,
             whiteSpace: "nowrap",
           }}
         >
           {value}
         </div>
-      </div>
 
-      {subtitle && (
-        <div
-          style={{
-            color: "#cbd5e1",
-            fontSize: isHero ? 11 : 10,
-            lineHeight: 1.3,
-            opacity: 0.9,
-            position: "relative",
-            zIndex: 2,
-            maxWidth: isHero ? "68%" : "100%",
-          }}
-        >
-          {subtitle}
-        </div>
-      )}
+        {subtitle && (
+          <div
+            style={{
+              color: "#cbd5e1",
+              fontSize: isHero ? 13 : 10,
+              lineHeight: 1.3,
+              opacity: 0.9,
+            }}
+          >
+            {subtitle}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

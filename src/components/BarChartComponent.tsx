@@ -9,6 +9,7 @@ import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";
 import KeyInsightsCard from "./KeyInsightsCard";
+import PerformanceStrip from "./PerformanceStrip";
 
 import type {
   FilterKey,
@@ -28,6 +29,19 @@ import {
   numberFormatter,
   percentFormatter,
 } from "../utils/salesUtils";
+
+
+const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+const compactNumberFormatter = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
 
 const cardStyle: React.CSSProperties = {
   backgroundColor: esqTheme.colors.panel,
@@ -111,6 +125,8 @@ const SalesCharts: React.FC = () => {
   }, [filterOptions]);
 
   const summary = useMemo(() => calculateSummary(filteredData), [filteredData]);
+
+  const totalSummary = useMemo(() => calculateSummary(allData), [allData]);
 
   const topStoresData = useMemo(
     () =>
@@ -210,40 +226,46 @@ const SalesCharts: React.FC = () => {
     fontWeight: 700,
   });
 
-  const kpiCards = [
-    {
-      label: "Net Sales",
-      value: currencyFormatter.format(summary.netSales),
-      subtitle: "Sales after returns / adjustments",
-    },
-    {
-      label: "Transactions",
-      value: numberFormatter.format(summary.transactions),
-      subtitle: `${numberFormatter.format(
-        summary.positiveTransactions
-      )} positive transactions`,
-    },
-    {
-      label: "Average Sale",
-      value: currencyFormatter.format(summary.averagePositiveSale),
-      subtitle: "Based on positive sales",
-    },
-    {
-      label: "Gross Sales",
-      value: currencyFormatter.format(summary.grossSales),
-      subtitle: "Positive sales only",
-    },
-    {
-      label: "Returns",
-      value: currencyFormatter.format(summary.returns),
-      subtitle: `${percentFormatter.format(summary.returnRate)} of gross sales`,
-    },
-    {
-      label: "Addresses",
-      value: numberFormatter.format(summary.uniqueAddresses),
-      subtitle: "Unique customer locations",
-    },
-  ];
+ const kpiCards = [
+  {
+    label: "Net Sales",
+    value: compactCurrencyFormatter.format(summary.netSales),
+    exactValue: currencyFormatter.format(summary.netSales),
+    subtitle: "After returns / adjustments",
+  },
+  {
+    label: "Transactions",
+    value: compactNumberFormatter.format(summary.transactions),
+    exactValue: numberFormatter.format(summary.transactions),
+    subtitle: `${compactNumberFormatter.format(
+      summary.positiveTransactions
+    )} positive transactions`,
+  },
+  {
+    label: "Avg Sale",
+    value: compactCurrencyFormatter.format(summary.averagePositiveSale),
+    exactValue: currencyFormatter.format(summary.averagePositiveSale),
+    subtitle: "Positive sales only",
+  },
+  {
+    label: "Gross Sales",
+    value: compactCurrencyFormatter.format(summary.grossSales),
+    exactValue: currencyFormatter.format(summary.grossSales),
+    subtitle: "Before returns",
+  },
+  {
+    label: "Returns",
+    value: compactCurrencyFormatter.format(summary.returns),
+    exactValue: currencyFormatter.format(summary.returns),
+    subtitle: `${percentFormatter.format(summary.returnRate)} of gross`,
+  },
+  {
+    label: "Customers",
+    value: compactNumberFormatter.format(summary.uniqueAddresses),
+    exactValue: numberFormatter.format(summary.uniqueAddresses),
+    subtitle: "Unique addresses",
+  },
+];
 
   return (
     <div
@@ -368,19 +390,28 @@ const SalesCharts: React.FC = () => {
               <KpiCard
                 label={kpiCards[0].label}
                 value={kpiCards[0].value}
+                exactValue={kpiCards[0].exactValue}
                 subtitle={kpiCards[0].subtitle}
                 isHero
               />
 
               {kpiCards.slice(1).map((kpi) => (
-                <KpiCard
-                  key={kpi.label}
-                  label={kpi.label}
-                  value={kpi.value}
-                  subtitle={kpi.subtitle}
-                />
-              ))}
+              <KpiCard
+                key={kpi.label}
+                label={kpi.label}
+                value={kpi.value}
+                exactValue={kpi.exactValue}
+                subtitle={kpi.subtitle}
+              />
+            ))}
             </div>
+
+            <PerformanceStrip
+              filteredCount={filteredData.length}
+              totalCount={allData.length}
+              filteredSummary={summary}
+              totalSummary={totalSummary}
+            />
 
             {activeTab === "Charts" && (
               <div

@@ -4,7 +4,7 @@ import { esqTheme } from "../theme/esqTheme";
 import KpiCard from "./KpiCard";
 import HorizontalBarChartCard from "./HorizontalBarChartCard";
 import TreemapChartCard from "./TreemapChartCard";
-import DonutChartCard from "./DonutChartCard";
+import DonutChartCard from "./VendorShareCard";
 import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";

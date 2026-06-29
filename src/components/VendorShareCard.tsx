@@ -64,8 +64,8 @@ export default function DonutChartCard({
           marginTop: 0,
           marginBottom: 16,
           color: esqTheme.colors.white,
-          fontSize: 14,
-          fontWeight: 700,
+          fontSize: 18,
+          fontWeight: 800,
         }}
       >
         {title}

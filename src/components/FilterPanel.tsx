@@ -1,104 +1,62 @@
 import React from "react";
 import Select, { StylesConfig } from "react-select";
 import { esqTheme } from "../theme/esqTheme";
+import MetricPills from "./MetricPills";
 
-import type {
-  MetricKey,
-  MetricOption,
-  SelectOption,
-} from "../types/sales";
-
-const METRIC_OPTIONS: MetricOption[] = [
-  { value: "netSales", label: "Net Sales" },
-  { value: "grossSales", label: "Gross Sales" },
-  { value: "returns", label: "Returns" },
-  { value: "transactions", label: "Transactions" },
-  { value: "averagePositiveSale", label: "Avg Sale" },
-];
-
-const METRIC_DESCRIPTIONS: Record<MetricKey, string> = {
-  netSales: "Sales after returns and adjustments.",
-  grossSales: "Positive sales only, excluding returns and adjustments.",
-  returns: "Absolute value of negative sales or adjustments.",
-  transactions: "Total number of rows matching the current filters.",
-  averagePositiveSale:
-    "Gross sales divided by positive transactions. Best used with enough transaction volume.",
-};
+import type { MetricKey, SelectOption } from "../types/sales";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
-const customStyles: StylesConfig<any, boolean> = {
+const customStyles: StylesConfig<SelectOption, true> = {
   control: (base, state) => ({
     ...base,
     backgroundColor: esqTheme.colors.panelSoft,
     borderColor: state.isFocused
       ? esqTheme.colors.orange
       : esqTheme.colors.border,
-    borderWidth: 2,
-    minHeight: 46,
-    borderRadius: 10,
+    borderWidth: 1,
+    minHeight: 38,
+    borderRadius: 999,
     boxShadow: "none",
-    transition: "all .15s ease",
+    cursor: "pointer",
     ":hover": {
       borderColor: esqTheme.colors.orange,
     },
   }),
-
   valueContainer: (base) => ({
     ...base,
-    padding: "2px 12px",
+    padding: "0 9px",
   }),
-
   input: (base) => ({
     ...base,
     color: esqTheme.colors.white,
   }),
-
-  singleValue: (base) => ({
-    ...base,
-    color: esqTheme.colors.white,
-    fontWeight: 500,
-  }),
-
   placeholder: (base) => ({
     ...base,
     color: esqTheme.colors.mutedText,
+    fontSize: 13,
   }),
-
-  indicatorSeparator: (base) => ({
-    ...base,
-    backgroundColor: "rgba(255,255,255,.15)",
+  indicatorSeparator: () => ({
+    display: "none",
   }),
-
-  dropdownIndicator: (base, state) => ({
+  dropdownIndicator: (base) => ({
     ...base,
-    color: state.isFocused
-      ? esqTheme.colors.orange
-      : esqTheme.colors.mutedText,
+    color: esqTheme.colors.mutedText,
+    padding: "4px 8px",
     ":hover": {
       color: esqTheme.colors.orange,
     },
   }),
-
   menu: (base) => ({
     ...base,
     backgroundColor: esqTheme.colors.panel,
     borderRadius: 12,
     overflow: "hidden",
     border: `1px solid ${esqTheme.colors.border}`,
-    marginTop: 6,
     zIndex: 9999,
   }),
-
-  menuList: (base) => ({
-    ...base,
-    padding: 6,
-  }),
-
   option: (base, state) => ({
     ...base,
-    borderRadius: 8,
-    marginBottom: 2,
     backgroundColor: state.isSelected
       ? esqTheme.colors.blue
       : state.isFocused
@@ -106,24 +64,19 @@ const customStyles: StylesConfig<any, boolean> = {
       : esqTheme.colors.panel,
     color: "#fff",
     cursor: "pointer",
-    ":active": {
-      backgroundColor: esqTheme.colors.orange,
-    },
+    fontSize: 13,
   }),
-
   multiValue: (base) => ({
     ...base,
     backgroundColor: esqTheme.colors.blue,
-    borderRadius: 20,
+    borderRadius: 999,
   }),
-
   multiValueLabel: (base) => ({
     ...base,
     color: "#fff",
-    fontWeight: 600,
-    paddingLeft: 10,
+    fontSize: 11,
+    fontWeight: 700,
   }),
-
   multiValueRemove: (base) => ({
     ...base,
     color: "#fff",
@@ -134,66 +87,7 @@ const customStyles: StylesConfig<any, boolean> = {
   }),
 };
 
-function getMetricLabel(metric: MetricKey): string {
-  return METRIC_OPTIONS.find((option) => option.value === metric)?.label ?? "";
-}
-
-function MetricPills({
-  selectedMetric,
-  onChange,
-}: {
-  selectedMetric: MetricKey;
-  onChange: (metric: MetricKey) => void;
-}) {
-  return (
-    <div style={{ flex: "1 1 100%", minWidth: "220px" }}>
-      <label
-        style={{
-          display: "block",
-          color: esqTheme.colors.white,
-          fontSize: "13px",
-          fontWeight: 700,
-          marginBottom: "8px",
-        }}
-      >
-        Metric
-      </label>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-        {METRIC_OPTIONS.map((option) => {
-          const isActive = option.value === selectedMetric;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => onChange(option.value)}
-              style={{
-                padding: "10px 14px",
-                borderRadius: esqTheme.radius.button,
-                border: isActive
-                  ? `1px solid ${esqTheme.colors.orange}`
-                  : `1px solid ${esqTheme.colors.border}`,
-                backgroundColor: isActive
-                  ? esqTheme.colors.orange
-                  : esqTheme.colors.panelSoft,
-                color: esqTheme.colors.white,
-                cursor: "pointer",
-                fontWeight: 700,
-                fontSize: "13px",
-                transition: "all .15s ease",
-              }}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function FilterSelect({
+function CompactFilterSelect({
   label,
   options,
   selectedValues,
@@ -205,19 +99,7 @@ function FilterSelect({
   onChange: (values: string[]) => void;
 }) {
   return (
-    <div style={{ minWidth: "220px", flex: "1 1 220px" }}>
-      <label
-        style={{
-          display: "block",
-          color: esqTheme.colors.white,
-          fontSize: "13px",
-          fontWeight: 700,
-          marginBottom: "6px",
-        }}
-      >
-        {label}
-      </label>
-
+    <div style={{ minWidth: 175, flex: "1 1 175px" }}>
       <Select<SelectOption, true>
         options={options}
         isMulti
@@ -226,7 +108,7 @@ function FilterSelect({
         onChange={(selected) =>
           onChange(selected ? selected.map((option) => option.value) : [])
         }
-        placeholder={`Filter by ${label}`}
+        placeholder={label}
       />
     </div>
   );
@@ -241,8 +123,6 @@ type FilterOptions = {
 };
 
 export default function FilterPanel({
-  filtersOpen,
-  setFiltersOpen,
   selectedMetric,
   setSelectedMetric,
   filterOptions,
@@ -260,8 +140,6 @@ export default function FilterPanel({
   totalCount,
   resetFilters,
 }: {
-  filtersOpen: boolean;
-  setFiltersOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedMetric: MetricKey;
   setSelectedMetric: React.Dispatch<React.SetStateAction<MetricKey>>;
   filterOptions: FilterOptions;
@@ -282,155 +160,114 @@ export default function FilterPanel({
   return (
     <div
       style={{
-        backgroundColor: esqTheme.colors.panel,
-        border: `1px solid ${esqTheme.colors.border}`,
-        borderRadius: esqTheme.radius.card,
-        boxShadow: "0 18px 40px rgba(0, 0, 0, 0.28)",
-        color: esqTheme.colors.text,
-        padding: "16px",
-        marginBottom: "18px",
+        backgroundColor: "transparent",
+        borderBottom: `1px solid ${esqTheme.colors.border}`,
+        padding: "8px 0 12px",
+        marginBottom: "16px",
       }}
     >
-      <button
-        onClick={() => setFiltersOpen((current) => !current)}
+      <div
         style={{
-          width: "100%",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          background: "transparent",
-          border: "none",
-          padding: 0,
-          marginBottom: filtersOpen ? "16px" : 0,
-          cursor: "pointer",
-          textAlign: "left",
+          gap: "16px",
+          alignItems: "flex-start",
+          marginBottom: "10px",
+          flexWrap: "wrap",
         }}
       >
         <div>
-          <h3
-            style={{
-              margin: 0,
-              color: esqTheme.colors.white,
-              fontSize: "18px",
-              fontWeight: 800,
-            }}
-          >
-            {filtersOpen ? "▼" : "▶"} Filters
-          </h3>
-
           <div
             style={{
-              color: "#cbd5e1",
-              fontSize: "13px",
-              marginTop: "4px",
+              color: esqTheme.colors.white,
+              fontSize: 15,
+              fontWeight: 800,
+              marginBottom: 6,
             }}
           >
-            Showing {numberFormatter.format(filteredCount)} of{" "}
-            {numberFormatter.format(totalCount)} rows.
+            Dashboard Controls
           </div>
-        </div>
 
-        <span
-          style={{
-            color: esqTheme.colors.orange,
-            fontSize: "13px",
-            fontWeight: 700,
-          }}
-        >
-          {filtersOpen ? "Collapse" : "Expand"}
-        </span>
-      </button>
-
-      {filtersOpen && (
-        <>
           <MetricPills
             selectedMetric={selectedMetric}
             onChange={setSelectedMetric}
           />
+        </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: "14px",
-              flexWrap: "wrap",
-              alignItems: "flex-end",
-              marginTop: "16px",
-            }}
-          >
-            <FilterSelect
-              label="State"
-              options={filterOptions.states}
-              selectedValues={selectedStates}
-              onChange={setSelectedStates}
-            />
+        <div
+          style={{
+            color: "#cbd5e1",
+            fontSize: 12,
+            whiteSpace: "nowrap",
+            marginTop: 2,
+          }}
+        >
+          {numberFormatter.format(filteredCount)} of{" "}
+          {numberFormatter.format(totalCount)} rows
+        </div>
+      </div>
 
-            <FilterSelect
-              label="City"
-              options={filterOptions.cities}
-              selectedValues={selectedCities}
-              onChange={setSelectedCities}
-            />
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <CompactFilterSelect
+          label="State"
+          options={filterOptions.states}
+          selectedValues={selectedStates}
+          onChange={setSelectedStates}
+        />
 
-            <FilterSelect
-              label="Store"
-              options={filterOptions.stores}
-              selectedValues={selectedStores}
-              onChange={setSelectedStores}
-            />
+        <CompactFilterSelect
+          label="City"
+          options={filterOptions.cities}
+          selectedValues={selectedCities}
+          onChange={setSelectedCities}
+        />
 
-            <FilterSelect
-              label="Vendor"
-              options={filterOptions.vendors}
-              selectedValues={selectedVendors}
-              onChange={setSelectedVendors}
-            />
+        <CompactFilterSelect
+          label="Store"
+          options={filterOptions.stores}
+          selectedValues={selectedStores}
+          onChange={setSelectedStores}
+        />
 
-            <FilterSelect
-              label="Category"
-              options={filterOptions.categories}
-              selectedValues={selectedCategories}
-              onChange={setSelectedCategories}
-            />
+        <CompactFilterSelect
+          label="Vendor"
+          options={filterOptions.vendors}
+          selectedValues={selectedVendors}
+          onChange={setSelectedVendors}
+        />
 
-            <button
-              onClick={resetFilters}
-              style={{
-                minHeight: "46px",
-                padding: "0 16px",
-                borderRadius: esqTheme.radius.input,
-                border: `1px solid ${esqTheme.colors.border}`,
-                backgroundColor: esqTheme.colors.panelSoft,
-                color: esqTheme.colors.white,
-                cursor: "pointer",
-                fontWeight: 700,
-              }}
-            >
-              Reset Filters
-            </button>
-          </div>
+        <CompactFilterSelect
+          label="Category"
+          options={filterOptions.categories}
+          selectedValues={selectedCategories}
+          onChange={setSelectedCategories}
+        />
 
-          <div
-            style={{
-              marginTop: "16px",
-              padding: "12px 16px",
-              backgroundColor: esqTheme.colors.panelSoft,
-              border: `1px solid ${esqTheme.colors.border}`,
-              borderRadius: "10px",
-              color: "#cbd5e1",
-              fontSize: "13px",
-              lineHeight: 1.5,
-            }}
-          >
-            <strong style={{ color: esqTheme.colors.orange }}>
-              {getMetricLabel(selectedMetric)}
-            </strong>
-
-            <div style={{ marginTop: "4px" }}>
-              {METRIC_DESCRIPTIONS[selectedMetric]}
-            </div>
-          </div>
-        </>
-      )}
+        <button
+          onClick={resetFilters}
+          style={{
+            minHeight: 38,
+            padding: "0 14px",
+            borderRadius: 999,
+            border: `1px solid ${esqTheme.colors.border}`,
+            backgroundColor: esqTheme.colors.panelSoft,
+            color: esqTheme.colors.white,
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: 13,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }

@@ -5,8 +5,15 @@ const cardStyle: React.CSSProperties = {
   backgroundColor: esqTheme.colors.panel,
   border: `1px solid ${esqTheme.colors.border}`,
   borderRadius: esqTheme.radius.card,
-  boxShadow: "0 14px 28px rgba(0, 0, 0, 0.22)",
+  boxShadow: "0 14px 28px rgba(0,0,0,.22)",
   color: esqTheme.colors.text,
+};
+
+type Props = {
+  label: string;
+  value: string;
+  subtitle?: string;
+  isHero?: boolean;
 };
 
 export default function KpiCard({
@@ -14,125 +21,136 @@ export default function KpiCard({
   value,
   subtitle,
   isHero = false,
-}: {
-  label: string;
-  value: string;
-  subtitle?: string;
-  isHero?: boolean;
-}) {
+}: Props) {
   return (
     <div
       style={{
         ...cardStyle,
         position: "relative",
-        padding: "14px 16px",
-        minHeight: "108px",
         overflow: "hidden",
-        backgroundColor: isHero ? "#242424" : esqTheme.colors.panel,
+
+        display: "flex",
+        flexDirection: "column",
+
+        justifyContent: isHero ? "space-between" : "flex-start",
+
+        padding: isHero ? "16px 20px" : "12px 16px",
+
+        minHeight: isHero ? 96 : 76,
+
+        backgroundColor: isHero
+          ? "#242424"
+          : esqTheme.colors.panel,
+
         border: `1px solid ${
-          isHero ? "rgba(234,114,57,.6)" : esqTheme.colors.border
+          isHero
+            ? "rgba(234,114,57,.55)"
+            : esqTheme.colors.border
         }`,
       }}
     >
       {isHero && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            backgroundColor: esqTheme.colors.orange,
-          }}
-        />
+        <>
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 4,
+              background: esqTheme.colors.orange,
+            }}
+          />
+
+          <svg
+            viewBox="0 0 240 90"
+            preserveAspectRatio="none"
+            style={{
+              position: "absolute",
+              right: 16,
+              bottom: 12,
+              width: "30%",
+              height: "44%",
+              opacity: 0.18,
+              pointerEvents: "none",
+            }}
+          >
+            <path
+              d="M0 70
+                 C25 55 45 68 65 48
+                 S110 38 130 26
+                 S175 30 195 18
+                 S220 18 240 8"
+              fill="none"
+              stroke={esqTheme.colors.orange}
+              strokeWidth="7"
+              strokeLinecap="round"
+            />
+
+            <path
+              d="M0 82
+                 C30 72 48 80 70 62
+                 S120 52 142 38
+                 S185 40 206 30
+                 S226 28 240 18"
+              fill="none"
+              stroke={esqTheme.colors.orange}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </>
       )}
 
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "8px",
+          position: "relative",
+          zIndex: 2,
+          maxWidth: isHero ? "68%" : "100%",
         }}
       >
         <div
           style={{
             color: esqTheme.colors.mutedText,
-            fontSize: "13px",
+            fontSize: 13,
+            fontWeight: 500,
+            marginBottom: isHero ? 8 : 6,
           }}
         >
           {label}
         </div>
 
-        {isHero && (
-          <div
-            style={{
-              color: esqTheme.colors.orange,
-              fontSize: "10px",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: ".08em",
-            }}
-          >
-            Primary
-          </div>
-        )}
-      </div>
+        <div
+          style={{
+            color: esqTheme.colors.white,
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            lineHeight: 1,
 
-      <div
-        style={{
-          color: esqTheme.colors.white,
-          fontSize: isHero ? "30px" : "24px",
-          fontWeight: 800,
-          letterSpacing: "-0.03em",
-          lineHeight: 1,
-          position: "relative",
-          zIndex: 2,
-        }}
-      >
-        {value}
+            fontSize: isHero ? 34 : 24,
+
+            marginBottom: isHero ? 0 : 8,
+
+            whiteSpace: "nowrap",
+          }}
+        >
+          {value}
+        </div>
       </div>
 
       {subtitle && (
         <div
           style={{
             color: "#cbd5e1",
-            fontSize: "12px",
-            marginTop: "8px",
+            fontSize: isHero ? 11 : 10,
+            lineHeight: 1.3,
             opacity: 0.9,
             position: "relative",
             zIndex: 2,
+            maxWidth: isHero ? "68%" : "100%",
           }}
         >
           {subtitle}
-        </div>
-      )}
-
-      {isHero && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            right: "16px",
-            bottom: "12px",
-            display: "flex",
-            alignItems: "flex-end",
-            gap: "5px",
-            height: "48px",
-            opacity: 0.45,
-          }}
-        >
-          {[14, 22, 18, 30, 24, 38, 32, 44].map((height, index) => (
-            <div
-              key={index}
-              style={{
-                width: "7px",
-                height,
-                borderRadius: "999px",
-                backgroundColor: esqTheme.colors.orange,
-              }}
-            />
-          ))}
         </div>
       )}
     </div>

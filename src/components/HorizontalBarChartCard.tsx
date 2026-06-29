@@ -8,9 +8,11 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 import { esqTheme } from "../theme/esqTheme";
 import type { ChartRow, MetricKey, MetricOption } from "../types/sales";
+import ChartTooltip from "./ChartTooltip";
 
 const METRIC_OPTIONS: MetricOption[] = [
   { value: "netSales", label: "Net Sales" },
@@ -20,20 +22,6 @@ const METRIC_OPTIONS: MetricOption[] = [
   { value: "averagePositiveSale", label: "Average Positive Sale" },
 ];
 
-const cardStyle: React.CSSProperties = {
-  backgroundColor: esqTheme.colors.panel,
-  border: `1px solid ${esqTheme.colors.border}`,
-  borderRadius: esqTheme.radius.card,
-  boxShadow: "0 18px 40px rgba(0, 0, 0, 0.28)",
-  color: esqTheme.colors.text,
-};
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
 const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -41,10 +29,14 @@ const compactCurrencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
-const numberFormatter = new Intl.NumberFormat("en-US");
-
 const compactNumberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+const percentFormatter = new Intl.NumberFormat("en-US", {
+  style: "percent",
+  minimumFractionDigits: 1,
   maximumFractionDigits: 1,
 });
 
@@ -52,22 +44,52 @@ function getMetricLabel(metric: MetricKey): string {
   return METRIC_OPTIONS.find((option) => option.value === metric)?.label ?? "";
 }
 
-function formatMetricValue(value: number, metric: MetricKey): string {
-  if (metric === "transactions") return numberFormatter.format(value);
-  return currencyFormatter.format(value);
-}
-
 function formatAxisValue(value: number, metric: MetricKey): string {
   if (metric === "transactions") return compactNumberFormatter.format(value);
   return compactCurrencyFormatter.format(value);
 }
 
-function truncateLabel(value: string, maxLength = 24): string {
+function truncateLabel(value: string, maxLength = 18): string {
   return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
 }
 
 function getChartColor(index: number): string {
   return esqTheme.dashboardColors[index % esqTheme.dashboardColors.length];
+}
+
+function CustomYAxisTick({ x, y, payload }: any) {
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={4}
+      textAnchor="end"
+      fill="#e5e7eb"
+      fontSize={13}
+      fontWeight={500}
+    >
+      {truncateLabel(String(payload.value), 18)}
+    </text>
+  );
+}
+
+function PercentLabel(props: any) {
+  const { x, y, width, height, payload } = props;
+
+  if (!payload?.percentOfTotal) return null;
+
+  return (
+    <text
+      x={x + width + 8}
+      y={y + height / 2}
+      dy={4}
+      fill="#cbd5e1"
+      fontSize={12}
+      fontWeight={700}
+    >
+      {percentFormatter.format(payload.percentOfTotal)}
+    </text>
+  );
 }
 
 export default function HorizontalBarChartCard({
@@ -81,29 +103,48 @@ export default function HorizontalBarChartCard({
 }) {
   const metricLabel = getMetricLabel(metric);
 
+  const total = data.reduce((sum, row) => sum + Math.abs(row.value), 0);
+
+  const chartData = data.map((row) => ({
+    ...row,
+    percentOfTotal: total > 0 ? Math.abs(row.value) / total : 0,
+  }));
+
+  const chartHeight = Math.max(340, chartData.length * 30);
+
   return (
-    <div style={{ ...cardStyle, padding: "18px", minHeight: "400px" }}>
+    <div
+      style={{
+        backgroundColor: esqTheme.colors.panel,
+        border: `1px solid ${esqTheme.colors.border}`,
+        borderRadius: esqTheme.radius.card,
+        boxShadow: "0 14px 28px rgba(0,0,0,.22)",
+        color: esqTheme.colors.text,
+        padding: 18,
+        minHeight: 400,
+      }}
+    >
       <h3
         style={{
           marginTop: 0,
-          marginBottom: "16px",
+          marginBottom: 12,
           color: esqTheme.colors.white,
-          fontSize: "14px",
+          fontSize: 14,
           fontWeight: 700,
         }}
       >
         {title}
       </h3>
 
-      {data.length === 0 ? (
+      {chartData.length === 0 ? (
         <p style={{ color: "#cbd5e1" }}>No data available.</p>
       ) : (
-        <ResponsiveContainer width="100%" height={340}>
+        <ResponsiveContainer width="100%" height={chartHeight}>
           <BarChart
-            data={data}
+            data={chartData}
             layout="vertical"
-            margin={{ top: 8, right: 32, left: 12, bottom: 24 }}
-            barCategoryGap={8}
+            margin={{ top: 8, right: 75, left: 24, bottom: 24 }}
+            barCategoryGap={16}
           >
             <CartesianGrid
               stroke="rgba(255,255,255,0.14)"
@@ -122,43 +163,26 @@ export default function HorizontalBarChartCard({
             <YAxis
               type="category"
               dataKey="name"
-              width={95}
-              tick={{ fill: "#e5e7eb", fontSize: 13 }}
+              width={130}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(value) => truncateLabel(String(value), 14)}
+              interval={0}
+              tick={<CustomYAxisTick />}
             />
 
-            <Tooltip
-              contentStyle={{
-                backgroundColor: esqTheme.colors.panelSoft,
-                border: `1px solid ${esqTheme.colors.border}`,
-                borderRadius: "10px",
-                color: esqTheme.colors.white,
-              }}
-              labelStyle={{
-                color: esqTheme.colors.white,
-                fontWeight: 700,
-              }}
-              itemStyle={{
-                color: esqTheme.colors.white,
-              }}
-              formatter={(value) => [
-                formatMetricValue(Number(value), metric),
-                metricLabel,
-              ]}
-              labelFormatter={(label) => String(label)}
-            />
+            <Tooltip content={<ChartTooltip metric={metric} />} />
 
             <Bar
               dataKey="value"
               name={metricLabel}
               radius={[0, 6, 6, 0]}
-              barSize={20}
+              barSize={16}
             >
-              {data.map((row, index) => (
+              {chartData.map((row, index) => (
                 <Cell key={`cell-${row.name}`} fill={getChartColor(index)} />
               ))}
+
+              <LabelList content={<PercentLabel />} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

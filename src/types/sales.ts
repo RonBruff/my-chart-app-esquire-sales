@@ -62,6 +62,7 @@ export interface SummaryMetrics {
   positiveTransactions: number;
   averagePositiveSale: number;
   uniqueStores: number;
+  uniqueAddresses: number;
 }
 
 export interface MapPoint {

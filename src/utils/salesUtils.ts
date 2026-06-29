@@ -153,6 +153,7 @@ export function aggregateRows(
 
 export function calculateSummary(rows: SalesRow[]): SummaryMetrics {
   const uniqueStores = new Set<string>();
+  const uniqueAddresses = new Set<string>();
 
   let netSales = 0;
   let grossSales = 0;
@@ -175,6 +176,17 @@ export function calculateSummary(rows: SalesRow[]): SummaryMetrics {
 
     const store = getText(row["store location"], "");
     if (store) uniqueStores.add(store);
+
+    const address = [
+      getText(row["delivery_line_1"], ""),
+      getText(row["city_name"], ""),
+      getText(row["state_abbreviation"], ""),
+      getText(row["zipcode"], ""),
+    ]
+      .filter(Boolean)
+      .join("|");
+
+    if (address) uniqueAddresses.add(address);
   });
 
   return {
@@ -187,6 +199,7 @@ export function calculateSummary(rows: SalesRow[]): SummaryMetrics {
     averagePositiveSale:
       positiveTransactions > 0 ? grossSales / positiveTransactions : 0,
     uniqueStores: uniqueStores.size,
+    uniqueAddresses: uniqueAddresses.size,
   };
 }
 

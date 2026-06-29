@@ -3,6 +3,8 @@ import * as XLSX from "xlsx";
 import { esqTheme } from "../theme/esqTheme";
 import KpiCard from "./KpiCard";
 import HorizontalBarChartCard from "./HorizontalBarChartCard";
+import TreemapChartCard from "./TreemapChartCard";
+import DonutChartCard from "./DonutChartCard";
 import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";
@@ -16,7 +18,7 @@ import type {
 } from "../types/sales";
 
 import {
-  buildChartSections,
+  aggregateRows,
   buildMapData,
   calculateSummary,
   currencyFormatter,
@@ -36,7 +38,6 @@ const cardStyle: React.CSSProperties = {
 
 const SalesCharts: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("Charts");
-  const [filtersOpen, setFiltersOpen] = useState(true);
   const [allData, setAllData] = useState<SalesRow[]>([]);
   const [selectedMetric, setSelectedMetric] = useState<MetricKey>("netSales");
 
@@ -110,8 +111,27 @@ const SalesCharts: React.FC = () => {
 
   const summary = useMemo(() => calculateSummary(filteredData), [filteredData]);
 
-  const chartSections = useMemo(
-    () => buildChartSections(filteredData, selectedMetric),
+  const topStoresData = useMemo(
+    () =>
+      aggregateRows(filteredData, "store location", selectedMetric).slice(
+        0,
+        15
+      ),
+    [filteredData, selectedMetric]
+  );
+
+  const topCitiesData = useMemo(
+    () => aggregateRows(filteredData, "city_name", selectedMetric).slice(0, 15),
+    [filteredData, selectedMetric]
+  );
+
+  const categoryData = useMemo(
+    () => aggregateRows(filteredData, "category", selectedMetric).slice(0, 12),
+    [filteredData, selectedMetric]
+  );
+
+  const vendorData = useMemo(
+    () => aggregateRows(filteredData, "vendor", selectedMetric).slice(0, 8),
     [filteredData, selectedMetric]
   );
 
@@ -150,7 +170,6 @@ const SalesCharts: React.FC = () => {
         setAllData(jsonData);
         setFileName(file.name);
         setActiveTab("Charts");
-        setFiltersOpen(true);
         resetFilters();
       } catch (error) {
         setUploadError(
@@ -219,9 +238,9 @@ const SalesCharts: React.FC = () => {
       subtitle: `${percentFormatter.format(summary.returnRate)} of gross sales`,
     },
     {
-      label: "Stores",
-      value: numberFormatter.format(summary.uniqueStores),
-      subtitle: "Active store locations",
+      label: "Addresses",
+      value: numberFormatter.format(summary.uniqueAddresses),
+      subtitle: "Unique customer locations",
     },
   ];
 
@@ -232,7 +251,7 @@ const SalesCharts: React.FC = () => {
         background: `linear-gradient(135deg, ${esqTheme.colors.nearBlack}, ${esqTheme.colors.darkGray})`,
         color: esqTheme.colors.text,
         fontFamily: esqTheme.fonts.body,
-        padding: "16px",
+        padding: "24px",
       }}
     >
       <div style={{ maxWidth: "1500px", margin: "0 auto" }}>
@@ -246,30 +265,30 @@ const SalesCharts: React.FC = () => {
           }}
         >
           <div>
-  <h2 style={{ margin: 0, color: esqTheme.colors.white }}>
-    Sales Insights
-  </h2>
-  <p style={{ color: "#cbd5e1", marginTop: "6px" }}>
-    Upload an Excel file and explore sales by state, city, store,
-    vendor, category, ZIP code, and geography.
-  </p>
-</div>
+            <h2 style={{ margin: 0, color: esqTheme.colors.white }}>
+              Sales Insights
+            </h2>
+            <p style={{ color: "#cbd5e1", marginTop: "6px" }}>
+              Upload an Excel file and explore sales by store, category, vendor,
+              city, and geography.
+            </p>
+          </div>
 
-<div
-  style={{
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-  }}
->
-  <UploadCard
-    fileName={fileName}
-    rowCount={allData.length}
-    onFileUpload={handleFileUpload}
-  />
-</div>
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <UploadCard
+              fileName={fileName}
+              rowCount={allData.length}
+              onFileUpload={handleFileUpload}
+            />
+          </div>
 
-<div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             <button
               onClick={() => setActiveTab("Charts")}
               style={tabButtonStyle("Charts")}
@@ -318,8 +337,6 @@ const SalesCharts: React.FC = () => {
         {allData.length > 0 && (
           <>
             <FilterPanel
-              filtersOpen={filtersOpen}
-              setFiltersOpen={setFiltersOpen}
               selectedMetric={selectedMetric}
               setSelectedMetric={setSelectedMetric}
               filterOptions={filterOptions}
@@ -339,30 +356,30 @@ const SalesCharts: React.FC = () => {
             />
 
             <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "2fr repeat(5, 1fr)",
-    gap: "12px",
-    marginBottom: "20px",
-    alignItems: "stretch",
-  }}
->
-  <KpiCard
-    label={kpiCards[0].label}
-    value={kpiCards[0].value}
-    subtitle={kpiCards[0].subtitle}
-    isHero
-  />
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr repeat(5, 1fr)",
+                gap: "10px",
+                marginBottom: "18px",
+                alignItems: "start",
+              }}
+            >
+              <KpiCard
+                label={kpiCards[0].label}
+                value={kpiCards[0].value}
+                subtitle={kpiCards[0].subtitle}
+                isHero
+              />
 
-  {kpiCards.slice(1).map((kpi) => (
-    <KpiCard
-      key={kpi.label}
-      label={kpi.label}
-      value={kpi.value}
-      subtitle={kpi.subtitle}
-    />
-  ))}
-</div>
+              {kpiCards.slice(1).map((kpi) => (
+                <KpiCard
+                  key={kpi.label}
+                  label={kpi.label}
+                  value={kpi.value}
+                  subtitle={kpi.subtitle}
+                />
+              ))}
+            </div>
 
             {activeTab === "Charts" && (
               <div
@@ -372,14 +389,29 @@ const SalesCharts: React.FC = () => {
                   gap: "24px",
                 }}
               >
-                {chartSections.map((section) => (
-                  <HorizontalBarChartCard
-                    key={section.title}
-                    title={section.title}
-                    data={section.data}
-                    metric={selectedMetric}
-                  />
-                ))}
+                <HorizontalBarChartCard
+                  title="Top Stores"
+                  data={topStoresData}
+                  metric={selectedMetric}
+                />
+
+                <TreemapChartCard
+                  title="Category Breakdown"
+                  data={categoryData}
+                  metric={selectedMetric}
+                />
+
+                <DonutChartCard
+                  title="Vendor Share"
+                  data={vendorData}
+                  metric={selectedMetric}
+                />
+
+                <HorizontalBarChartCard
+                  title="Top Cities"
+                  data={topCitiesData}
+                  metric={selectedMetric}
+                />
               </div>
             )}
 

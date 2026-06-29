@@ -1,10 +1,15 @@
 import React from "react";
 import { esqTheme } from "../theme/esqTheme";
-import type { ChartRow } from "../types/sales";
+import type { ChartRow, MetricKey } from "../types/sales";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+const numberFormatter = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
@@ -14,6 +19,20 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 1,
   maximumFractionDigits: 1,
 });
+
+function formatMetricValue(value: number, metric: MetricKey) {
+  if (metric === "transactions") return numberFormatter.format(value);
+  return currencyFormatter.format(value);
+}
+
+function getMetricNoun(metric: MetricKey) {
+  if (metric === "netSales") return "net sales";
+  if (metric === "grossSales") return "gross sales";
+  if (metric === "returns") return "returns";
+  if (metric === "transactions") return "transactions";
+  if (metric === "averagePositiveSale") return "average sale";
+  return "metric value";
+}
 
 function getShare(row: ChartRow | undefined, rows: ChartRow[]) {
   if (!row) return 0;
@@ -34,7 +53,7 @@ function InsightItem({
   return (
     <div
       style={{
-        padding: "14px 0",
+        padding: "12px 0",
         borderBottom: "1px solid rgba(255,255,255,.08)",
       }}
     >
@@ -81,13 +100,17 @@ export default function KeyInsightsCard({
   categoryData,
   vendorData,
   returnRate,
+  metric,
 }: {
   storeData: ChartRow[];
   cityData: ChartRow[];
   categoryData: ChartRow[];
   vendorData: ChartRow[];
   returnRate: number;
+  metric: MetricKey;
 }) {
+  const metricNoun = getMetricNoun(metric);
+
   const topStore = storeData[0];
   const topCity = cityData[0];
   const topCategory = categoryData[0];
@@ -142,13 +165,14 @@ export default function KeyInsightsCard({
         eyebrow="Top store"
         title={
           topStore
-            ? `Store ${topStore.name} leads sales`
+            ? `${topStore.name} leads by ${metricNoun}`
             : "No store data available"
         }
         detail={
           topStore
-            ? `${topStore.name} generated ${currencyFormatter.format(
-                topStore.value
+            ? `${topStore.name} generated ${formatMetricValue(
+                topStore.value,
+                metric
               )} in the current view.`
             : "Upload or filter data to see store insights."
         }
@@ -165,7 +189,7 @@ export default function KeyInsightsCard({
           topCategory
             ? `${topCategory.name} represents ${percentFormatter.format(
                 topCategoryShare
-              )} of the shown category total.`
+              )} of the shown category total for ${metricNoun}.`
             : "Category share will appear once data is available."
         }
       />
@@ -181,7 +205,7 @@ export default function KeyInsightsCard({
           topVendor
             ? `${topVendor.name} accounts for ${percentFormatter.format(
                 topVendorShare
-              )} of the shown vendor total.`
+              )} of the shown vendor total for ${metricNoun}.`
             : "Vendor share will appear once data is available."
         }
       />
@@ -190,21 +214,17 @@ export default function KeyInsightsCard({
         eyebrow="Geography"
         title={
           topCity
-            ? `${topCity.name} is the strongest city`
+            ? `${topCity.name} ranks first by ${metricNoun}`
             : "No city data available"
         }
         detail={
           topCity
-            ? `${topCity.name} ranks first among cities in the current filters.`
+            ? `${topCity.name} is the strongest city in the current filters.`
             : "City insights will appear once data is available."
         }
       />
 
-      <div
-        style={{
-          paddingTop: 14,
-        }}
-      >
+      <div style={{ paddingTop: 12 }}>
         <div
           style={{
             color: esqTheme.colors.orange,

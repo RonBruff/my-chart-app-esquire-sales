@@ -392,11 +392,12 @@ const SalesCharts: React.FC = () => {
               >
 
               <KeyInsightsCard
-                  storeData={topStoresData}
-                  cityData={topCitiesData}
-                  categoryData={categoryData}
-                  vendorData={vendorData}
-                  returnRate={summary.returnRate}
+                storeData={topStoresData}
+                cityData={topCitiesData}
+                categoryData={categoryData}
+                vendorData={vendorData}
+                returnRate={summary.returnRate}
+                metric={selectedMetric}
                 />
 
                 <HorizontalBarChartCard

@@ -8,6 +8,7 @@ import DonutChartCard from "./VendorShareCard";
 import SalesMap from "./SalesMap";
 import FilterPanel from "./FilterPanel";
 import UploadCard from "./UploadCard";
+import KeyInsightsCard from "./KeyInsightsCard";
 
 import type {
   FilterKey,
@@ -389,6 +390,15 @@ const SalesCharts: React.FC = () => {
                   gap: "24px",
                 }}
               >
+
+              <KeyInsightsCard
+                  storeData={topStoresData}
+                  cityData={topCitiesData}
+                  categoryData={categoryData}
+                  vendorData={vendorData}
+                  returnRate={summary.returnRate}
+                />
+
                 <HorizontalBarChartCard
                   title="Top Stores"
                   data={topStoresData}
@@ -404,12 +414,6 @@ const SalesCharts: React.FC = () => {
                 <DonutChartCard
                   title="Vendor Share"
                   data={vendorData}
-                  metric={selectedMetric}
-                />
-
-                <HorizontalBarChartCard
-                  title="Top Cities"
-                  data={topCitiesData}
                   metric={selectedMetric}
                 />
               </div>
